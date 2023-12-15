@@ -1,0 +1,34 @@
+@startuml sequence
+autonumber
+title Instant notify pipeline
+
+participant external as "External"
+participant api as "Notify API"
+database query as "Query"
+database db as "Notify DB"
+participant service as "Notify Service"
+participant worker as "Worker"
+
+actor customer as "Customer"
+
+external -> api: HTTP POST: Instant notify
+api -> query: Put notify-request
+api -> external: HTTP 202: Accepted
+
+loop Pop query
+service -> query: Pop notify-requests
+    alt Empty
+        query -> service: Empty response
+    else Filled
+        query -> service: Filled response
+
+        service -> db: Get notify-templates
+        db -> service
+
+        service -> worker: Send notify-task
+        worker -> customer: Notify
+
+    end
+end
+
+@enduml
