@@ -1,0 +1,43 @@
+@startuml to_be
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!define SPRITES https://raw.githubusercontent.com/rabelenda/cicon-plantuml-sprites/v1.0/sprites
+!include SPRITES/postgresql.puml
+!include SPRITES/rabbitmq.puml
+
+HIDE_STEREOTYPE()
+
+Person(user, "Customer")
+Person(notify_admin, "Admin")
+
+System_Boundary(notification_system, "Notification") {
+    Container(admin_panel, "Admin Panel")
+    Container(notify_api, "Notify API")
+    Container(notify_regular_service, "Regular notify service")
+    Container(notify_service, "Notify Service")
+    ContainerDb(db, "Notify DB", "PostgreSQL", $sprite="postgresql")
+    ContainerDb(query, "Task query", "RabbitMQ", $sprite="rabbitmq")
+    Container(worker, "Worker")
+}
+
+Container(ugc_service, "UGC service")
+Container(analyze_service, "Analyze service")
+Container(auth_service, "Auth service")
+Container(content_service, "Content service")
+
+Rel(auth_service, notify_api, "")
+Rel(content_service, notify_api, "")
+Rel(ugc_service, notify_api, "")
+
+Rel(notify_admin, admin_panel, "")
+Rel(admin_panel, db, "")
+
+Rel(notify_api, query, "Put in query")
+
+Rel(notify_regular_service, db, "Read")
+Rel(notify_regular_service, notify_api, "")
+Rel(notify_service, worker, "Notify task")
+Rel(notify_service, query, "Pop")
+
+Rel(worker, user, "Notify")
+
+@enduml

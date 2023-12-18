@@ -8,26 +8,27 @@
 HIDE_STEREOTYPE()
 
 Person(user, "Customer")
-Person(admin, "Admin")
-
-System(external, "External service")
+Person(notify_admin, "Admin")
+System(external, "Auth service")
 
 Container(admin_panel, "Admin Panel")
 Container(notify_api, "Notify API")
+Container(notify_regular_service, "Regular notify service")
 Container(notify_service, "Notify Service")
 ContainerDb(db, "Notify DB", "PostgreSQL", $sprite="postgresql")
 ContainerDb(query, "Task query", "RabbitMQ", $sprite="rabbitmq")
 Container(worker, "Worker")
 
+Rel(notify_admin, admin_panel, "")
+Rel(admin_panel, db, "")
+
 Rel(external, notify_api, "")
 Rel(notify_api, query, "Put in query")
 
-Rel(admin_panel, db, "")
-Rel(admin, admin_panel, "")
-
-Rel_L(notify_service, db, "Read")
-Rel(notify_service, worker, "Send notify task")
-Rel_R(notify_service, query, "Pop")
+Rel(notify_regular_service, db, "Read")
+Rel(notify_regular_service, notify_api, "")
+Rel(notify_service, worker, "Notify task")
+Rel(notify_service, query, "Pop")
 
 Rel(worker, user, "Notify")
 

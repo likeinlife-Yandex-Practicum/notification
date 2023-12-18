@@ -15,20 +15,13 @@ external -> api: HTTP POST: Instant notify
 api -> query: Put notify-request
 api -> external: HTTP 202: Accepted
 
-loop Pop query
 service -> query: Pop notify-requests
-    alt Empty
-        query -> service: Empty response
-    else Filled
-        query -> service: Filled response
+query -> service
 
-        service -> db: Get notify-templates
-        db -> service
+service -> db: Get notify-templates
+db -> service
 
-        service -> worker: Send notify-task
-        worker -> customer: Notify
-
-    end
-end
+service -> worker: Send notify-task
+worker -> customer: Notify
 
 @enduml

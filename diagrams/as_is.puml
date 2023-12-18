@@ -1,0 +1,63 @@
+@startuml as_is
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!define SPRITES https://raw.githubusercontent.com/rabelenda/cicon-plantuml-sprites/v1.0/sprites
+!include SPRITES/mongodb.puml
+!include SPRITES/kafka.puml
+!include SPRITES/postgresql.puml
+!include clickhouse.puml
+
+
+HIDE_STEREOTYPE()
+
+Person(user, "Customer")
+Person(admin, "Admin")
+Person(analytic, "Analytic")
+
+System_Boundary(analyze_system, "Analyze") {
+    Container(analyze_service, "Analyze Service", "FastApi")
+    Container(analyze_etl, "Analyze ETL", "Kafka engine")
+    ContainerDb(oltp, "OLTP", "Kafka", $sprite="kafka")
+    ContainerDb(olap, "OLAP", "Clickhouse", $sprite="clickhouse")
+}
+
+System_Boundary(content_system, "Content") {
+    Container(content_service, "Content Service", "FastApi")
+    Container(content_etl, "Content ETL", "python script")
+    ContainerDb(search_db, "Search DB", "ClickHouse", $sprite="clickhouse")
+    ContainerDb(movie_db, "Movie DB", "PostgreSQL", $sprite="postgresql")
+}
+
+System_Boundary(user_content_system, "User Content") {
+    Container(user_content_service, "User Content Service", "FastApi")
+    ContainerDb(user_db, "User Content DB", "Mongo DB", $sprite="mongodb")
+    Container(user_content_etl, "User Content ETL")
+}
+
+Container(admin_service, "Admin service", "Django")
+Container(auth_service, "Auth service", "FastApi")
+
+Rel(analyze_service, oltp, "Send")
+Rel(analyze_etl, oltp, "Collect")
+Rel(analyze_etl, olap, "Send")
+
+Rel(content_service, search_db, "Read")
+Rel(content_etl, search_db, "Send")
+Rel(content_etl, movie_db, "Collect")
+
+Rel(user_content_service, user_db, "Send/Read")
+
+Rel(user, analyze_service, "Send")
+Rel(user, content_service, "Read")
+Rel(user, user_content_service, "Send/Read")
+
+Rel(user_content_etl, user_db, "Collect")
+Rel(user_content_etl, oltp, "Send")
+
+Rel_U(analytic, olap, " ")
+
+Rel_L(admin, admin_service, " ")
+Rel_U(admin_service, movie_db, "Send/Read")
+
+
+
+@enduml
