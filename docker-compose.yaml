@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  notification:
+    build: "./notification_service"
+    env_file: .env
+    environment:
+      RABBIT_HOST: ${RABBIT_HOST:-rabbit}
+      RABBIT_PORT: ${RABBIT_PORT:-5672}
+      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+
+  rabbit:
+    build: 
+      context: "./rabbitmq"
+    ports:
+      - 5672:5672
+
+  postgres:
+    image: postgres:alpine3.19
+    volumes:
+      - ./inserts.sql:/docker-entrypoint-initdb.d/dump.sql:ro
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"

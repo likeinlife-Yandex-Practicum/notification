@@ -12,10 +12,10 @@ Person(notify_admin, "Admin")
 System_Boundary(notification_system, "Notification") {
     Container(admin_panel, "Admin Panel")
     Container(notify_api, "Notify API")
-    Container(notify_regular_service, "Regular notify service")
+    Container(notify_regular_service, "Regular converter service")
     Container(notify_service, "Notify Service")
     ContainerDb(db, "Notify DB", "PostgreSQL", $sprite="postgresql")
-    ContainerDb(query, "Task query", "RabbitMQ", $sprite="rabbitmq")
+    ContainerDb(query, "Task queue", "RabbitMQ", $sprite="rabbitmq")
     ContainerDb(user_db, "User database", "PostgreSQL", $sprite="postgresql")
     Container(worker, "Worker")
 }
@@ -26,8 +26,8 @@ Container(auth_service, "Auth service")
 Container(content_service, "Content service")
 
 Rel(auth_service, notify_api, "")
-Rel(content_service, notify_api, "")
-Rel(ugc_service, notify_api, "")
+' Rel(content_service, notify_api, "")
+' Rel(ugc_service, notify_api, "")
 
 Rel(notify_admin, admin_panel, "")
 Rel(admin_panel, db, "")

@@ -1,7 +1,7 @@
 @startuml sequence
 autonumber
 
-participant external as "External"
+participant external as "Regular notify converter"
 participant api as "Notify API"
 database query as "Queue"
 database db as "Notify DB"

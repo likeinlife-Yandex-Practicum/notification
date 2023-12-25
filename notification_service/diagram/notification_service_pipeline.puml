@@ -1,0 +1,36 @@
+@startuml sequence
+autonumber
+
+database query as "Queue"
+participant consumer as "Consumer"
+participant resolver as "Resolver"
+
+participant user_provider as "User provider"
+database user_db as "User db"
+
+participant notify_sender as "Notify sender"
+participant notify_provider as "Notify provider"
+
+actor customer as "Customer"
+
+consumer -> query: Get notify request
+
+consumer -> resolver
+
+resolver -> user_provider
+
+user_provider -> user_db: Read user info
+
+resolver -> notify_sender
+
+notify_sender -> notify_provider
+
+notify_provider -> customer
+
+notify_provider -> notify_sender: Result: 0 or 1
+
+alt Send error
+    notify_sender -> query: Put to dead letter queue
+end
+
+@enduml
