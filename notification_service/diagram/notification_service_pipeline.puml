@@ -1,7 +1,8 @@
-@startuml sequence
+@startuml notify_pipeline_code_level
 autonumber
 
-database query as "Queue"
+database dead_queue as "Dead Letter Queue"
+database queue as "Queue"
 participant consumer as "Consumer"
 participant resolver as "Resolver"
 
@@ -13,7 +14,7 @@ participant notify_provider as "Notify provider"
 
 actor customer as "Customer"
 
-consumer -> query: Get notify request
+consumer -> queue: Get notify request
 
 consumer -> resolver
 
@@ -27,10 +28,12 @@ notify_sender -> notify_provider
 
 notify_provider -> customer
 
-notify_provider -> notify_sender: Result: 0 or 1
+notify_provider -> notify_sender: Result: True or False
 
 alt Send error
-    notify_sender -> query: Put to dead letter queue
+    notify_sender -> dead_queue
+    dead_queue -> queue
 end
+
 
 @enduml

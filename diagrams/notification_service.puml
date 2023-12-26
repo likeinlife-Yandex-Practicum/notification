@@ -1,4 +1,4 @@
-@startuml notification
+@startuml notification_service
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
 !define SPRITES https://raw.githubusercontent.com/rabelenda/cicon-plantuml-sprites/v1.0/sprites
@@ -16,7 +16,7 @@ Container(notify_api, "Notify API")
 Container(regular_converter, "Regular converter service")
 Container(notify_service, "Notify Service")
 ContainerDb(db, "Notify DB", "PostgreSQL", $sprite="postgresql")
-ContainerDb(query, "Task queue", "RabbitMQ", $sprite="rabbitmq")
+ContainerDb(queue, "Task queue", "RabbitMQ", $sprite="rabbitmq")
 ContainerDb(user_db, "User database", "PostgreSQL", $sprite="postgresql")
 Container(worker, "Worker")
 
@@ -24,13 +24,13 @@ Rel(notify_admin, admin_panel, "")
 Rel(admin_panel, db, "")
 
 Rel(external, notify_api, "")
-Rel(notify_api, query, "Put in query")
+Rel(notify_api, queue, "Put in query")
 
 Rel(regular_converter, db, "Read")
 Rel(regular_converter, notify_api, "")
 Rel(notify_service, worker, "Notify task")
 Rel(notify_service, user_db, "Get users")
-Rel(notify_service, query, "Pop")
+Rel(notify_service, queue, "Pop")
 
 Rel(worker, user, "Notify")
 

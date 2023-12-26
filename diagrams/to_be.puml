@@ -15,30 +15,25 @@ System_Boundary(notification_system, "Notification") {
     Container(notify_regular_service, "Regular converter service")
     Container(notify_service, "Notify Service")
     ContainerDb(db, "Notify DB", "PostgreSQL", $sprite="postgresql")
-    ContainerDb(query, "Task queue", "RabbitMQ", $sprite="rabbitmq")
+    ContainerDb(queue, "Task queue", "RabbitMQ", $sprite="rabbitmq")
     ContainerDb(user_db, "User database", "PostgreSQL", $sprite="postgresql")
     Container(worker, "Worker")
 }
 
-Container(ugc_service, "UGC service")
-Container(analyze_service, "Analyze service")
 Container(auth_service, "Auth service")
-Container(content_service, "Content service")
 
 Rel(auth_service, notify_api, "")
-' Rel(content_service, notify_api, "")
-' Rel(ugc_service, notify_api, "")
 
 Rel(notify_admin, admin_panel, "")
 Rel(admin_panel, db, "")
 
-Rel(notify_api, query, "Put in query")
+Rel(notify_api, queue, "Put in query")
 
 Rel(notify_regular_service, db, "Read")
 Rel(notify_regular_service, notify_api, "")
 Rel(notify_service, user_db, "Get users")
 Rel(notify_service, worker, "Notify task")
-Rel(notify_service, query, "Pop")
+Rel(notify_service, queue, "Pop")
 
 Rel(worker, user, "Notify")
 
