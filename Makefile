@@ -2,7 +2,13 @@ SOURCE_QUEUE := dead_letter
 DEST_QUEUE := notify_task
 
 up:
-	docker compose up -d --build
+	docker-compose up -d --build
+
+downv:
+	docker-compose down -v
+
+down:
+	docker-compose down
 	
 dead-letter-setup:
 	docker compose exec -it rabbit rabbitmqctl set_parameter shovel my-shovel \
