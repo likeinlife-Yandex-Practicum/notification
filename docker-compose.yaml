@@ -42,9 +42,23 @@ services:
     ports:
       - "80:80"
 
+  notification-notify:
+    build: 
+      context: "./notification_service"
+      args:
+        - COMMAND=notify
+    env_file: .env
+    environment:
+      RABBIT_HOST: ${RABBIT_HOST:-rabbit}
+      RABBIT_PORT: ${RABBIT_PORT:-5672}
+      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
 
-  notification:
-    build: "./notification_service"
+  notification-user:
+    build: 
+      context: "./notification_service"
+      args:
+        - COMMAND=user
     env_file: .env
     environment:
       RABBIT_HOST: ${RABBIT_HOST:-rabbit}

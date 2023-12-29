@@ -11,18 +11,14 @@ database notify_task_queue as "Notify\nTask\nQueue"
 database dead_letter_queue as "Dead\nLetter\nQueue"
 
 box "User providing" #LightCyan
-participant user_provider as "User\nProvider"
-database user_provided_queue as "User\nProvided\nQueue"
+    participant user_provider as "User\nProvider"
+    database user_provided_queue as "User\nProvided\nQueue"
 end box
 
-box "Content prividing" #LightGreen
-participant content_provider as "Content\nprovider"
-database content_provided_queue as "Content\nProvided\nQueue"
+box "Notification sending" #LightGreen
+    participant email_sender as "Email Sender"
+    actor customer as "Customer"
 end box
-
-participant email_sender as "Email Sender"
-
-actor customer as "Customer"
 
 external -> api: Notify Task
 activate api
@@ -37,15 +33,8 @@ alt ok
 else error
     user_provider -> notify_requests: User Provision Error
 end
-user_provided_queue -> content_provider
+user_provided_queue -> email_sender 
 
-alt ok
-    content_provider -> content_provided_queue
-else error
-    content_provider -> notify_requests: Content Provision Error
-end
-
-content_provided_queue -> email_sender 
 email_sender -> customer
 alt ok 
     email_sender -> notify_requests: Success send

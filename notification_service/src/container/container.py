@@ -9,9 +9,9 @@ from user_provider import UserProvider
 
 
 class Container(containers.DeclarativeContainer):
-    settings = providers.Singleton(Settings)
+    settings: providers.Singleton[Settings] = providers.Singleton(Settings)
 
-    logging = providers.Resource(
+    logging: providers.Resource = providers.Resource(
         configure_structlog,
         settings().json_logging_level,
         settings().console_logging_level,

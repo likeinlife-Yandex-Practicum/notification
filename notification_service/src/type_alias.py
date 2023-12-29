@@ -1,6 +1,5 @@
-from typing import Callable, Coroutine, TypeAlias
+from typing import Any, Callable, Coroutine, TypeAlias
 
-from models import QueueMessage
-from models.user import UserInfo
+from models.queue_message import UserProvidedQueueMessage
 
-SenderType: TypeAlias = Callable[[QueueMessage, UserInfo], Coroutine]
+SenderType: TypeAlias = Callable[[UserProvidedQueueMessage], Coroutine[Any, Any, Any]]

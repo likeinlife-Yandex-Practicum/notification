@@ -34,7 +34,8 @@ class SMTPSettings(BaseSettings):
 
 
 class QueueNameSettings(BaseSettings):
-    notify: str
+    user_provided: str
+    notify_task: str
     dead_letter: str
 
     model_config = SettingsConfigDict(env_prefix="queue_", env_file=".env")

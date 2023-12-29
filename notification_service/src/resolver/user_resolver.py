@@ -1,42 +1,33 @@
 import structlog
 from aio_pika.abc import AbstractIncomingMessage
 from container import Container
-from dependency_injector.wiring import Provide
+from core import settings
+from dependency_injector.wiring import Provide, inject
 from models import QueueMessage
+from models.queue_message import UserProvidedQueueMessage
+from producer import produce
 from pydantic import TypeAdapter
-from sender import smtp_sender, test_sender
-from type_alias import SenderType
 from user_provider import UserProvider
 
 logger = structlog.get_logger()
 
 
-notification_resolve_ways: dict[str, SenderType] = {
-    "email": smtp_sender,
-    "test": test_sender,
-}
-
-
 async def resolver(
     message: AbstractIncomingMessage,
 ):
-    """Resolve notification type."""
+    """Resolve users."""
     async with message.process():
         logger.info("[x] Received message", id=message.message_id)
         adapted_message = TypeAdapter(QueueMessage).validate_json(message.body)
         logger.debug(adapted_message)
-        sender = notification_resolve_ways.get(adapted_message.type_)
-        if not sender:
-            logger.error("Notification type not found", type=adapted_message.type_)
-            return
 
-        await resolve_user_id(adapted_message, sender)
-        await resolve_role(adapted_message, sender)
+        await resolve_user_id(adapted_message)
+        await resolve_role(adapted_message)
 
 
+@inject
 async def resolve_user_id(
     message: QueueMessage,
-    sender: SenderType,
     user_provider: UserProvider = Provide[Container.user_provider],
 ):
     """Resolve user ids."""
@@ -45,12 +36,22 @@ async def resolve_user_id(
         if not user:
             logger.warning("User not found", id=id_)
             continue
-        await sender(message, user)
+        formed_message = UserProvidedQueueMessage(
+            id=message.id,
+            user=user,
+            type_=message.type_,
+            message=message.message,
+            subject=message.subject,
+        )
+        await produce(
+            pika_queue_name=settings.queue.user_provided,
+            message=formed_message.model_dump_json().encode(),
+        )
 
 
+@inject
 async def resolve_role(
     message: QueueMessage,
-    sender: SenderType,
     user_provider: UserProvider = Provide[Container.user_provider],
 ):
     """Resolve user roles."""
@@ -60,4 +61,14 @@ async def resolve_role(
             logger.warning("Users not found", role=role)
             continue
         for user in user_list:
-            await sender(message, user)
+            formed_message = UserProvidedQueueMessage(
+                id=message.id,
+                user=user,
+                type_=message.type_,
+                message=message.message,
+                subject=message.subject,
+            )
+            await produce(
+                pika_queue_name=settings.queue.user_provided,
+                message=formed_message.model_dump_json().encode(),
+            )

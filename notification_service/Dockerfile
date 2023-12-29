@@ -15,9 +15,13 @@ COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt --no-cache-dir
 
 COPY src src
+COPY docker-entrypoint.sh docker-entrypoint.sh
 
 RUN chmod -R 777 src
 
 USER ${CONTAINER_USER}
 
-ENTRYPOINT ["python3", "src/main.py"]
+ARG COMMAND
+ENV COMMAND_VAR=${COMMAND}
+
+ENTRYPOINT ./docker-entrypoint.sh $COMMAND_VAR
