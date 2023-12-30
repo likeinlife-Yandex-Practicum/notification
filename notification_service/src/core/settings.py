@@ -12,7 +12,7 @@ class PostgresSettings(BaseSettings):
     db_name: str = Field()
     password: str = Field()
 
-    model_config = SettingsConfigDict(env_prefix="postgres_", env_file=".env")
+    model_config = SettingsConfigDict(env_prefix="notify_postgres_", env_file=".env")
 
 
 class RabbitSettings(BaseSettings):
@@ -21,7 +21,7 @@ class RabbitSettings(BaseSettings):
     user: str = Field("guest")
     password: str = Field("guest")
 
-    model_config = SettingsConfigDict(env_prefix="rabbit_", env_file=".env")
+    model_config = SettingsConfigDict(env_prefix="notify_rabbit_", env_file=".env")
 
 
 class SMTPSettings(BaseSettings):
@@ -30,7 +30,7 @@ class SMTPSettings(BaseSettings):
     host: str
     port: int
 
-    model_config = SettingsConfigDict(env_prefix="smtp_", env_file=".env")
+    model_config = SettingsConfigDict(env_prefix="notify_smtp_", env_file=".env")
 
 
 class QueueNameSettings(BaseSettings):
@@ -38,7 +38,7 @@ class QueueNameSettings(BaseSettings):
     notify_task: str
     dead_letter: str
 
-    model_config = SettingsConfigDict(env_prefix="queue_", env_file=".env")
+    model_config = SettingsConfigDict(env_prefix="notify_queue_", env_file=".env")
 
 
 class Settings(BaseSettings):

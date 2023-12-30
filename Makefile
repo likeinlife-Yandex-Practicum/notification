@@ -3,11 +3,14 @@ DEST_QUEUE := notify_task
 
 up:
 	docker compose up -d --build
+	docker compose up -d --build
 
 downv:
 	docker compose down -v
+	docker compose down -v
 
 down:
+	docker compose down
 	docker compose down
 	
 dead-letter-setup:
@@ -18,4 +21,4 @@ up-notify:
 	docker compose up -d rabbit postgres notification-user notification-notify --build
 
 env:
-	cp sample.env .env
+	./env-setup.sh

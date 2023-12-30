@@ -2,7 +2,22 @@ version: '3'
 
 services:
 
-  db_notifications:
+  api:
+    build:
+      context: ./notification-api
+    restart: on-failure
+    entrypoint: uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+    env_file:
+      - .env
+    environment:
+      API_RABBIT_HOST: ${API_RABBIT_HOST:-rabbit}
+      API_RABBIT_PORT: ${API_RABBIT_PORT:-5672}
+      API_POSTGRES_HOST: ${API_POSTGRES_HOST:-admin_db}
+      API_POSTGRES_PORT: ${API_POSTGRES_PORT:-5432}
+    ports:
+      - "8001:8001"
+
+  admin_db:
     image: postgres:alpine3.19
     container_name: db_notify
     ports:
@@ -11,9 +26,9 @@ services:
     volumes:
       - db_volume:/var/lib/postgresql/data
     environment:
-      - POSTGRES_USER=${PG_ADMIN_NF_USER}
-      - POSTGRES_PASSWORD=${PG_ADMIN_NF_PASSWORD}
-      - POSTGRES_DB=${PG_ADMIN_NF_DB_NAME}
+      POSTGRES_USER: ${PG_ADMIN_NF_USER}
+      POSTGRES_PASSWORD: ${PG_ADMIN_NF_PASSWORD}
+      POSTGRES_DB: ${PG_ADMIN_NF_DB_NAME}
 
   admin_notifications:
     build: admin
@@ -23,8 +38,11 @@ services:
       - media_volume:/opt/admin/media
     env_file:
       - .env
+    environment:
+      PG_ADMIN_NF_DB_HOST: ${PG_ADMIN_NF_DB_HOST:-admin_db}
+      PG_ADMIN_NF_DB_PORT: ${PG_ADMIN_NF_DB_PORT:-5432}
     depends_on:
-      - db_notifications
+      - admin_db 
     expose:
       - "8000"
 
@@ -34,37 +52,39 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./data:/data/:ro
       - static_volume:/opt/admin/static
       - media_volume:/opt/admin/media
     depends_on:
       - admin_notifications
+      - api
     ports:
       - "80:80"
 
   notification-notify:
-    build: 
+    build:
       context: "./notification_service"
       args:
         - COMMAND=notify
-    env_file: .env
+    env_file: 
+      - .env
     environment:
-      RABBIT_HOST: ${RABBIT_HOST:-rabbit}
-      RABBIT_PORT: ${RABBIT_PORT:-5672}
-      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
-      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      NOTIFY_RABBIT_HOST: ${NOTIFY_RABBIT_HOST:-rabbit}
+      NOTIFY_RABBIT_PORT: ${NOTIFY_RABBIT_PORT:-5672}
+      NOTIFY_POSTGRES_HOST: ${NOTIFY_POSTGRES_HOST:-postgres}
+      NOTIFY_POSTGRES_PORT: ${NOTIFY_POSTGRES_PORT:-5432}
 
   notification-user:
-    build: 
+    build:
       context: "./notification_service"
       args:
         - COMMAND=user
-    env_file: .env
+    env_file: 
+      - .env
     environment:
-      RABBIT_HOST: ${RABBIT_HOST:-rabbit}
-      RABBIT_PORT: ${RABBIT_PORT:-5672}
-      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
-      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      NOTIFY_RABBIT_HOST: ${NOTIFY_RABBIT_HOST:-rabbit}
+      NOTIFY_RABBIT_PORT: ${NOTIFY_RABBIT_PORT:-5672}
+      NOTIFY_POSTGRES_HOST: ${NOTIFY_POSTGRES_HOST:-postgres}
+      NOTIFY_POSTGRES_PORT: ${NOTIFY_POSTGRES_PORT:-5432}
 
   rabbit:
     build:

@@ -31,7 +31,7 @@
 
 # Запуск
 
-1. make env - скопировать sample.env в .env
+1. make env - сконфигурирует один файл из environment
 2. В .env файле заменить переменные `SMTP_LOGIN`, `SMTP_PASSWORD` на свои (предполагается использование SMTP yandex, но можно заменить и `SMTP_HOST`, `SMTP_PORT`)
 3. make up - запустить контейнеры
 4. make dead-letter-setup - настроить Dead Letter Queue
