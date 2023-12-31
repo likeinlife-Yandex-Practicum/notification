@@ -5,9 +5,9 @@ from core import settings
 from dependency_injector.wiring import Provide, inject
 from models import QueueMessage
 from models.queue_message import UserProvidedQueueMessage
-from producer import produce
 from pydantic import TypeAdapter
-from user_provider import UserProvider
+from services.producer import produce
+from services.user_provider import UserProvider
 
 logger = structlog.get_logger()
 
@@ -16,13 +16,13 @@ async def resolver(
     message: AbstractIncomingMessage,
 ):
     """Resolve users."""
-    async with message.process():
-        logger.info("[x] Received message", id=message.message_id)
-        adapted_message = TypeAdapter(QueueMessage).validate_json(message.body)
-        logger.debug(adapted_message)
+    logger.info("[x] Received message", id=message.message_id)
+    adapted_message = TypeAdapter(QueueMessage).validate_json(message.body)
+    logger.debug(adapted_message)
 
-        await resolve_user_id(adapted_message)
-        await resolve_role(adapted_message)
+    await resolve_user_id(adapted_message)
+    await resolve_role(adapted_message)
+    await message.ack()
 
 
 @inject
@@ -44,7 +44,7 @@ async def resolve_user_id(
             subject=message.subject,
         )
         await produce(
-            pika_queue_name=settings.queue.user_provided,
+            exchange_name=settings.queue.user_provided + "_exchange",
             message=formed_message.model_dump_json().encode(),
         )
 
@@ -69,6 +69,6 @@ async def resolve_role(
                 subject=message.subject,
             )
             await produce(
-                pika_queue_name=settings.queue.user_provided,
+                exchange_name=settings.queue.user_provided + "_exchange",
                 message=formed_message.model_dump_json().encode(),
             )

@@ -37,6 +37,7 @@ class QueueNameSettings(BaseSettings):
     user_provided: str
     notify_task: str
     dead_letter: str
+    dead_letter_ttl: int = Field(5000)
 
     model_config = SettingsConfigDict(env_prefix="notify_queue_", env_file=".env")
 

@@ -1,6 +1,6 @@
 import asyncio
 
-import consumer
+import services.consumer as consumer
 from container import setup
 from core import settings
 from resolver.user_resolver import resolver

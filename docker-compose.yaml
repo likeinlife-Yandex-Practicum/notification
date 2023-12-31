@@ -57,8 +57,12 @@ services:
     env_file: 
       - .env
     depends_on:
-      - rabbit
-      - mailpit
+      rabbit:
+        condition: service_started
+      mailpit:
+        condition: service_started
+      notification-rabbit:
+        condition: service_completed_successfully
     environment:
       NOTIFY_RABBIT_HOST: ${NOTIFY_RABBIT_HOST:-rabbit}
       NOTIFY_RABBIT_PORT: ${NOTIFY_RABBIT_PORT:-5672}
@@ -73,8 +77,27 @@ services:
     env_file: 
       - .env
     depends_on:
+      rabbit:
+        condition: service_started
+      postgres:
+        condition: service_started
+      notification-rabbit:
+        condition: service_completed_successfully
+    environment:
+      NOTIFY_RABBIT_HOST: ${NOTIFY_RABBIT_HOST:-rabbit}
+      NOTIFY_RABBIT_PORT: ${NOTIFY_RABBIT_PORT:-5672}
+      NOTIFY_POSTGRES_HOST: ${NOTIFY_POSTGRES_HOST:-postgres}
+      NOTIFY_POSTGRES_PORT: ${NOTIFY_POSTGRES_PORT:-5432}
+
+  notification-rabbit:
+    build:
+      context: "./notification_service"
+      args:
+        - COMMAND=rabbit
+    env_file: 
+      - .env
+    depends_on:
       - rabbit
-      - postgres
     environment:
       NOTIFY_RABBIT_HOST: ${NOTIFY_RABBIT_HOST:-rabbit}
       NOTIFY_RABBIT_PORT: ${NOTIFY_RABBIT_PORT:-5672}
@@ -86,6 +109,7 @@ services:
       context: "./rabbitmq"
     ports:
       - 5672:5672
+      - 15672:15672
 
   postgres:
     image: postgres:alpine3.19

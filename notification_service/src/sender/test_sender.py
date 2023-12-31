@@ -12,11 +12,12 @@ logger = structlog.get_logger()
 async def sender(
     message: UserProvidedQueueMessage,
     provider: TestProvider = Provide[Container.test_provider],
-):
+) -> bool:
     details = BaseNotificationDetails(
         id=message.id,
         message=message.message,
         subject=message.subject,
         to=message.user.email,
     )
-    await provider.send(details)
+    result = await provider.send(details)
+    return result

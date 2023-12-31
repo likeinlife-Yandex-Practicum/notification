@@ -17,15 +17,11 @@ async def consumer(
     channel_pool: Pool[AbstractChannel] = Provide[Container.rabbit_channel_pool],
 ):
     async with channel_pool.acquire() as channel:
-        logger.info("ACQUIRED CONSUMER")
-        await channel.set_qos(prefetch_count=10)
-
-        queue = await channel.declare_queue(
+        logger.info("GOT CHANNEL")
+        queue = await channel.get_queue(
             queue_name,
-            auto_delete=False,
-            durable=True,
-            arguments={"x-queue-type": "quorum"},
         )
+        logger.info("GOT QUERY")
 
         await queue.consume(callback)
 

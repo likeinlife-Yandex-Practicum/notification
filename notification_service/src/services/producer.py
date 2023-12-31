@@ -10,14 +10,15 @@ logger = structlog.get_logger()
 
 @inject
 async def produce(
-    pika_queue_name: str,
+    exchange_name: str,
     message: bytes,
     channel_pool: Pool[AbstractChannel] = Provide[Container.rabbit_channel_pool],
 ):
     async with channel_pool.acquire() as channel:
-        logger.info("ACQUIRED PRODUCER")
-        await channel.default_exchange.publish(
+        exchange = await channel.get_exchange(exchange_name)
+        await exchange.publish(
             aio_pika.Message(body=message),
-            routing_key=pika_queue_name,
+            routing_key="",
         )
-        logger.info("CREATED MESSAGE")
+
+        logger.info("PRODUCED MESSAGE")

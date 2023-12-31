@@ -14,7 +14,7 @@ async def get_connection() -> AbstractRobustConnection:
 
 
 def get_connection_pool() -> Pool[AbstractRobustConnection]:
-    return Pool(get_connection, max_size=2)
+    return Pool(get_connection, max_size=5)
 
 
 async def get_channel() -> AbstractChannel:
@@ -24,4 +24,4 @@ async def get_channel() -> AbstractChannel:
 
 @lru_cache
 def get_channel_pool() -> Pool[AbstractChannel]:
-    return Pool(get_channel, max_size=2)
+    return Pool(get_channel, max_size=5)

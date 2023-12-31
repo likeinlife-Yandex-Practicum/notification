@@ -5,11 +5,14 @@ from db.postgres import get_connection_pool
 from db.rabbit import get_channel_pool
 from dependency_injector import containers, providers
 from notification_provider import SMTPProvider, TestProvider
-from user_provider import UserProvider
+from services.user_provider import UserProvider
 
 
 class Container(containers.DeclarativeContainer):
     settings: providers.Singleton[Settings] = providers.Singleton(Settings)
+
+    postgres_connection_pool: providers.Factory = providers.Factory(get_connection_pool)
+    rabbit_channel_pool: providers.Singleton = providers.Singleton(get_channel_pool)
 
     logging: providers.Resource = providers.Resource(
         configure_structlog,
@@ -30,9 +33,6 @@ class Container(containers.DeclarativeContainer):
         TestProvider,
         logger=structlog.get_logger("test_provider"),
     )
-
-    postgres_connection_pool: providers.Factory = providers.Factory(get_connection_pool)
-    rabbit_channel_pool: providers.Singleton = providers.Singleton(get_channel_pool)
 
     user_provider: providers.Singleton[UserProvider] = providers.Singleton(
         UserProvider,

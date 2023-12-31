@@ -13,7 +13,7 @@ logger = structlog.get_logger()
 
 
 def generate_message() -> QueueMessage:
-    type_ = QueueMessageType.TEST
+    type_ = QueueMessageType.EMAIL
     message = "".join(random.sample(ascii_lowercase, 5))
     subject = "Test subject " + "".join(random.sample(ascii_lowercase, 5))
     return QueueMessage(
@@ -25,22 +25,20 @@ def generate_message() -> QueueMessage:
     )
 
 
-async def produce(
-    channel_pool: Pool[AbstractChannel],
-    pika_queue_name: str,
-):
+async def produce(channel_pool: Pool[AbstractChannel], exchange_name: str):
     async with channel_pool.acquire() as channel:
         logger.info("ACQUIRED PRODUCER")
-        await channel.default_exchange.publish(
+        exchange = await channel.get_exchange(exchange_name)
+        await exchange.publish(
             aio_pika.Message(body=generate_message().model_dump_json().encode()),
-            routing_key=pika_queue_name,
+            routing_key="",
         )
         logger.info("CREATED MESSAGE")
 
 
 if __name__ == "__main__":
     # queue_name = "dead_letter"
-    queue_name = "notify_task"
+    exchange_name = "notify_task_exchange"
     channel_pool = get_channel_pool()
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(produce(channel_pool, queue_name))
+    loop.run_until_complete(produce(channel_pool, exchange_name))
