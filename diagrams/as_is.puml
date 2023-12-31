@@ -6,6 +6,9 @@
 !include SPRITES/postgresql.puml
 !include https://gist.githubusercontent.com/likeinlife/3f34e230e0240514fa28bcc1fce1c5b1/raw/457d818dda3ed5e89b491b53cc79fca67579b8a6/gistfile1.txt
 
+skinparam linetype polyline
+skinparam linetype ortho
+
 
 HIDE_STEREOTYPE()
 

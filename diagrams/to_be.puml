@@ -3,38 +3,38 @@
 !define SPRITES https://raw.githubusercontent.com/rabelenda/cicon-plantuml-sprites/v1.0/sprites
 !include SPRITES/postgresql.puml
 !include SPRITES/rabbitmq.puml
+skinparam linetype polyline
+skinparam linetype ortho
 
 HIDE_STEREOTYPE()
 
 Person(user, "Customer")
 Person(notify_admin, "Admin")
+System(auth_service, "Auth service")
 
 System_Boundary(notification_system, "Notification") {
     Container(admin_panel, "Admin Panel")
     Container(notify_api, "Notify API")
     Container(notify_regular_service, "Regular converter service")
-    Container(notify_service, "Notify Service")
+    Container(notify_workers_pipeline, "Notify Workers Pipeline")
     ContainerDb(db, "Notify DB", "PostgreSQL", $sprite="postgresql")
+
     ContainerDb(queue, "Task queue", "RabbitMQ", $sprite="rabbitmq")
     ContainerDb(user_db, "User database", "PostgreSQL", $sprite="postgresql")
-    Container(worker, "Worker")
 }
-
-Container(auth_service, "Auth service")
 
 Rel(auth_service, notify_api, "")
 
 Rel(notify_admin, admin_panel, "")
 Rel(admin_panel, db, "")
 
-Rel(notify_api, queue, "Put in query")
+Rel(notify_api, queue, "Put")
 
 Rel(notify_regular_service, db, "Read")
 Rel(notify_regular_service, notify_api, "")
-Rel(notify_service, user_db, "Get users")
-Rel(notify_service, worker, "Notify task")
-Rel(notify_service, queue, "Pop")
+Rel(notify_workers_pipeline, user_db, "Get users")
+Rel(notify_workers_pipeline, queue, "Pop")
 
-Rel(worker, user, "Notify")
+Rel(notify_workers_pipeline, user, "Notify")
 
 @enduml
