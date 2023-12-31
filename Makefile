@@ -1,5 +1,5 @@
 SOURCE_QUEUE := dead_letter
-DEST_QUEUE := notify_task
+DEST_QUEUE := user_provided
 
 up:
 	docker compose up -d --build

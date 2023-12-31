@@ -13,4 +13,9 @@ CREATE TABLE IF NOT EXISTS auth.user (
 CREATE UNIQUE INDEX IF NOT EXISTS user_email ON auth.user (email);
 
 INSERT INTO auth.user (email, roles) VALUES ( 'likeinlife48@yandex.ru', '{"admin", "user"}');
-INSERT INTO auth.user (email, roles) VALUES ( 'likeinlife@outlook.com', '{"subscriber"}');
+INSERT INTO auth.user (email, roles) VALUES ( 'likeinlife@outlook.com', '{"subscriber", "user"}');
+INSERT INTO auth.user (email, roles) VALUES ( 'test@example.com', '{"subscriber", "user"}');
+INSERT INTO auth.user (email, roles) VALUES ( 'first@example.com', '{"subscriber", "user"}');
+INSERT INTO auth.user (email, roles) VALUES ( 'second@example.com', '{"subscriber", "user"}');
+INSERT INTO auth.user (email, roles) VALUES ( 'third@example.com', '{"subscriber", "user"}');
+INSERT INTO auth.user (email, roles) VALUES ( 'fourth@example.com', '{"subscriber", "user"}');

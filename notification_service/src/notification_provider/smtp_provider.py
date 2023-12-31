@@ -15,6 +15,7 @@ class SMTPProvider(BaseProvider):
         login: str,
         password: str,
         logger: Any,
+        use_tls: bool = False,
     ) -> None:
         self.logger = logger
         self.server = aiosmtplib.SMTP(
@@ -22,8 +23,11 @@ class SMTPProvider(BaseProvider):
             port=smtp_port,
             username=login,
             password=password,
-            use_tls=True,
+            use_tls=False,
         )
+
+        if use_tls:
+            self.server.use_tls = True
 
     async def send(self, details: SMTPNotificationDetails) -> bool:
         async with self.server:

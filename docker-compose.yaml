@@ -9,26 +9,15 @@ services:
     entrypoint: uvicorn main:app --host 0.0.0.0 --port 8001 --reload
     env_file:
       - .env
+    depends_on:
+      - postgres
     environment:
       API_RABBIT_HOST: ${API_RABBIT_HOST:-rabbit}
       API_RABBIT_PORT: ${API_RABBIT_PORT:-5672}
-      API_POSTGRES_HOST: ${API_POSTGRES_HOST:-admin_db}
+      API_POSTGRES_HOST: ${API_POSTGRES_HOST:-postgres}
       API_POSTGRES_PORT: ${API_POSTGRES_PORT:-5432}
     ports:
       - "8001:8001"
-
-  admin_db:
-    image: postgres:alpine3.19
-    container_name: db_notify
-    ports:
-      - "5433:5432"
-    restart: always
-    volumes:
-      - db_volume:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: ${PG_ADMIN_NF_USER}
-      POSTGRES_PASSWORD: ${PG_ADMIN_NF_PASSWORD}
-      POSTGRES_DB: ${PG_ADMIN_NF_DB_NAME}
 
   admin_notifications:
     build: admin
@@ -39,10 +28,10 @@ services:
     env_file:
       - .env
     environment:
-      PG_ADMIN_NF_DB_HOST: ${PG_ADMIN_NF_DB_HOST:-admin_db}
+      PG_ADMIN_NF_DB_HOST: ${PG_ADMIN_NF_DB_HOST:-postgres}
       PG_ADMIN_NF_DB_PORT: ${PG_ADMIN_NF_DB_PORT:-5432}
     depends_on:
-      - admin_db 
+      - postgres
     expose:
       - "8000"
 
@@ -67,6 +56,9 @@ services:
         - COMMAND=notify
     env_file: 
       - .env
+    depends_on:
+      - rabbit
+      - mailpit
     environment:
       NOTIFY_RABBIT_HOST: ${NOTIFY_RABBIT_HOST:-rabbit}
       NOTIFY_RABBIT_PORT: ${NOTIFY_RABBIT_PORT:-5672}
@@ -80,6 +72,9 @@ services:
         - COMMAND=user
     env_file: 
       - .env
+    depends_on:
+      - rabbit
+      - postgres
     environment:
       NOTIFY_RABBIT_HOST: ${NOTIFY_RABBIT_HOST:-rabbit}
       NOTIFY_RABBIT_PORT: ${NOTIFY_RABBIT_PORT:-5672}
@@ -102,6 +97,17 @@ services:
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
+
+  mailpit:
+    container_name: mailpit
+    restart: on-failure
+    image: axllent/mailpit:latest
+    environment:
+      - MP_SMTP_AUTH_ALLOW_INSECURE=true
+      - MP_SMTP_AUTH_ACCEPT_ANY=true
+    ports:
+      - '8025:8025'
+      - '1025:1025'
 
 volumes:
   db_volume:

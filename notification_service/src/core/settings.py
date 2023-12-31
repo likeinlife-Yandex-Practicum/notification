@@ -6,17 +6,17 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class PostgresSettings(BaseSettings):
-    host: str = Field()
+    host: str
     port: str = Field("5432")
-    user: str = Field()
-    db_name: str = Field()
-    password: str = Field()
+    user: str
+    db_name: str
+    password: str
 
     model_config = SettingsConfigDict(env_prefix="notify_postgres_", env_file=".env")
 
 
 class RabbitSettings(BaseSettings):
-    host: str = Field()
+    host: str
     port: str = Field("5672")
     user: str = Field("guest")
     password: str = Field("guest")

@@ -29,12 +29,18 @@
 - Написание АПИ
 - Написание тестов АПИ
 
-# Запуск
+# Запуск и остановка
 
-1. make env - сконфигурирует один файл из environment
-2. В .env файле заменить переменные `SMTP_LOGIN`, `SMTP_PASSWORD` на свои (предполагается использование SMTP yandex, но можно заменить и `SMTP_HOST`, `SMTP_PORT`)
-3. make up - запустить контейнеры
-4. make dead-letter-setup - настроить Dead Letter Queue
+## Запуск
+
+1. `make env` - сконфигурирует один файл из environment
+2. `make up` - запустить контейнеры
+3. `make dead-letter-setup` - настроить Dead Letter Queue
+
+## Остановка
+
+- `make down` - остановить контейнеры, но не удалить volumes
+- `make downv` - удалить и контейнеры, и volumes
 
 # Тестирование
 
@@ -43,4 +49,5 @@ TODO
 # URLs
 
 1. admin panel: http://127.0.0.1/admin
-2. api: http://127.0.0.1/api
+2. openapi: http://127.0.0.1/api/openapi
+2. mail: http://127.0.0.1:8025
