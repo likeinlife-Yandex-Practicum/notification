@@ -6,6 +6,8 @@ from django.db import models
 from django.db.models.functions import Now
 from django.utils.translation import gettext_lazy as _
 
+from notifications.enums.notification_registration_status import NotificationRegistrationStatus
+
 
 class TimeStampedMixin(models.Model):
     created_at = models.DateTimeField(_("created_at"), auto_now_add=True, db_default=Now())
@@ -48,13 +50,17 @@ class Notification(UUIDMixin, TimeStampedMixin):
         verbose_name=_("template"),
     )
     subject = models.CharField(_("subject"), max_length=64)
-    periodicity = models.DurationField(_("periodicity"), default=timedelta(days=7))
     start_at = models.DateTimeField(_("start_at"))
-    finish_at = models.DateTimeField(_("finish_at"))
     roles = ArrayField(
         models.CharField(max_length=64),
         help_text=_("User roles. For example: admin, user, subscriber"),
         verbose_name=_("roles"),
+    )
+    status = models.CharField(
+        _("Status"),
+        max_length=64,
+        choices=NotificationRegistrationStatus.choices,
+        default=NotificationRegistrationStatus.WAITING,
     )
 
     class Meta:

@@ -9,7 +9,7 @@ rabbitmq_client: Optional[AbstractConnection] = None
 rabbitmq_channel: Optional[AbstractChannel] = None
 
 
-@backoff.on_exception(backoff.expo, AMQPConnectionError, max_time=10)
+@backoff.on_exception(backoff.expo, AMQPConnectionError, max_time=30)
 async def get_connection(dsn) -> AbstractRobustConnection:
     return await aio_pika.connect_robust(dsn)
 
