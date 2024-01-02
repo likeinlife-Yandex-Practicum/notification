@@ -28,8 +28,10 @@ api -> external: HTTP Accepted, notify-id
 deactivate api
 
 notify_task_queue -> user_provider
+activate notify_task_queue
 alt ok
     user_provider -> user_provided_queue
+    user_provider -> notify_requests: User Provided
 else error
     user_provider -> notify_requests: User Provision Error
 end
@@ -37,12 +39,12 @@ user_provided_queue -> email_sender
 
 email_sender -> customer
 alt ok 
-    email_sender -> notify_requests: Success send
+    email_sender -> notify_requests: Ok
 else error
-    email_sender -> notify_requests: Send error
-    email_sender -> dead_letter_queue: Put to dead letter queue
+    email_sender -> dead_letter_queue
 end
 
-dead_letter_queue -> notify_task_queue: Resend dead letter
+dead_letter_queue -> notify_task_queue: Resend
+deactivate notify_task_queue
 
 @enduml

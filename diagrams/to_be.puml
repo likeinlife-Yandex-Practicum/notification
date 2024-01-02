@@ -3,7 +3,7 @@
 !define SPRITES https://raw.githubusercontent.com/rabelenda/cicon-plantuml-sprites/v1.0/sprites
 !include SPRITES/postgresql.puml
 !include SPRITES/rabbitmq.puml
-skinparam linetype polyline
+' skinparam linetype polyline
 skinparam linetype ortho
 
 HIDE_STEREOTYPE()
@@ -28,12 +28,15 @@ Rel(auth_service, notify_api, "")
 Rel(notify_admin, admin_panel, "")
 Rel(admin_panel, db, "")
 
-Rel(notify_api, queue, "Put")
+Rel_R(notify_api, db, "")
+Rel(notify_api, queue, " ")
 
-Rel(notify_regular_service, db, "Read")
+Rel(notify_regular_service, db, " ")
 Rel(notify_regular_service, notify_api, "")
-Rel(notify_workers_pipeline, user_db, "Get users")
-Rel(notify_workers_pipeline, queue, "Pop")
+
+Rel(notify_workers_pipeline, user_db, " ")
+Rel_R(queue, notify_workers_pipeline, " ")
+Rel(notify_workers_pipeline, db, " ")
 
 Rel(notify_workers_pipeline, user, "Notify")
 
