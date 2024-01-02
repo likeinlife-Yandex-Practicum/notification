@@ -9,6 +9,9 @@ downv:
 
 down:
 	docker compose down
+
+test:
+	docker compose -f ./tests/docker-compose.yaml up --abort-on-container-exit --exit-code-from tests --attach tests --build
 	
 dead-letter-setup:
 	docker compose exec -it rabbit rabbitmqctl set_parameter shovel my-shovel \

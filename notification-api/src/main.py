@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 import structlog
 from api.v1 import task
+from api import healthcheck
 from core.settings import settings
 from db import postgres, rabbit
 from errors.base import BaseError
@@ -30,6 +31,7 @@ app = FastAPI(
     default_response_class=ORJSONResponse,
     lifespan=lifespan,
 )
+
 
 logger = structlog.get_logger()
 
@@ -70,4 +72,5 @@ async def logger_middleware(request: Request, call_next):
     return response
 
 
+app.include_router(healthcheck.router)
 app.include_router(task.router, prefix="/api/v1/events", tags=["events"])

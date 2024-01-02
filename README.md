@@ -43,7 +43,7 @@
 
 # Тестирование
 
-TODO
+- `make test`
 
 # URLs
 
