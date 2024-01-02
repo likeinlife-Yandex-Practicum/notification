@@ -16,17 +16,17 @@ class Migration(migrations.Migration):
             model_name="template",
             name="params",
             field=django.contrib.postgres.fields.ArrayField(
-                base_field=models.CharField(max_length=64),
+                base_field=models.CharField(max_length=64, null=True),
                 size=None,
                 verbose_name="params",
+                default=list,
+                blank=True,
             ),
             preserve_default=False,
         ),
         migrations.AlterField(
             model_name="notification",
             name="periodicity",
-            field=models.DurationField(
-                default=datetime.timedelta(days=7), verbose_name="periodicity"
-            ),
+            field=models.DurationField(default=datetime.timedelta(days=7), verbose_name="periodicity"),
         ),
     ]

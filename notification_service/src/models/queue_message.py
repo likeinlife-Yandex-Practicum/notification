@@ -1,7 +1,7 @@
 import uuid
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from .user import UserInfo
 
@@ -13,7 +13,7 @@ class QueueMessageType(str, Enum):
 
 
 class QueueMessage(BaseModel):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4)
+    id: uuid.UUID
     to_id: list[uuid.UUID]
     to_role: list[str]
     type_: QueueMessageType
@@ -22,6 +22,7 @@ class QueueMessage(BaseModel):
 
 
 class UserProvidedQueueMessage(BaseModel):
+    task_id: uuid.UUID
     id: uuid.UUID
     user: UserInfo
     type_: QueueMessageType

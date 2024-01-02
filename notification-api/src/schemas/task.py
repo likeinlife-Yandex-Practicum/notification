@@ -5,13 +5,13 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel, Field
 
 
-class QueueMessageType(str, Enum):
+class NotifyType(str, Enum):
     EMAIL = "email"
     TEST = "test"
 
 
-class EventSchema(BaseModel):
-    type_: QueueMessageType
+class TaskCreateSchema(BaseModel):
+    type_: NotifyType
     template: str
     is_regular: bool
     subject: str
@@ -20,10 +20,10 @@ class EventSchema(BaseModel):
     params: Dict[str, str]
 
 
-class MessageSchema(BaseModel):
-    id_: UUID = Field(default_factory=uuid4)
+class TaskWithMessage(BaseModel):
+    id: UUID = Field(default_factory=uuid4)
     is_regular: bool
-    type_: QueueMessageType
+    type_: NotifyType
     subject: str
     message: str
     to_id: list[UUID]

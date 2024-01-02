@@ -1,9 +1,12 @@
+import uuid
 from contextlib import asynccontextmanager
 
-from api.v1 import events
+import structlog
+from api.v1 import task
 from core.settings import settings
 from db import postgres, rabbit
-from fastapi import FastAPI
+from errors.base import BaseError
+from fastapi import FastAPI, Request, status
 from fastapi.responses import ORJSONResponse
 
 
@@ -28,4 +31,43 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.include_router(events.router, prefix="/api/v1/events", tags=["events"])
+logger = structlog.get_logger()
+
+
+@app.exception_handler(BaseError)
+async def project_error_handler(request: Request, exc: BaseError):
+    return ORJSONResponse(
+        status_code=exc.status_code,
+        content=exc.detail,
+    )
+
+
+@app.middleware("http")
+async def logger_middleware(request: Request, call_next):
+    structlog.contextvars.clear_contextvars()
+
+    request_id = request.headers.get("X-Request-Id") or str(uuid.uuid4())
+    structlog.contextvars.bind_contextvars(
+        path=request.url.path,
+        method=request.method,
+        client_host=request.client.host,  # type: ignore
+        request_id=request_id,
+    )
+
+    response = await call_next(request)
+
+    structlog.contextvars.bind_contextvars(
+        status_code=response.status_code,
+    )
+
+    if status.HTTP_400_BAD_REQUEST <= response.status_code < status.HTTP_500_INTERNAL_SERVER_ERROR:
+        logger.warn("Client error")
+    elif response.status_code >= status.HTTP_500_INTERNAL_SERVER_ERROR:
+        logger.error("Server error")
+    else:
+        logger.info("OK")
+
+    return response
+
+
+app.include_router(task.router, prefix="/api/v1/events", tags=["events"])

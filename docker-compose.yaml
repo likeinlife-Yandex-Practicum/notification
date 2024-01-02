@@ -11,6 +11,8 @@ services:
       - .env
     depends_on:
       - postgres
+    volumes:
+      - "./notification-api/src:/opt/app/"
     environment:
       API_RABBIT_HOST: ${API_RABBIT_HOST:-rabbit}
       API_RABBIT_PORT: ${API_RABBIT_PORT:-5672}
@@ -22,7 +24,8 @@ services:
   admin_notifications:
     build:
       context: admin
-      dockerfile: ./Dockerfile
+      args:
+        - COMMAND=admin
     container_name: django-admin
     volumes:
       - static_volume:/opt/admin/static
@@ -50,7 +53,8 @@ services:
     container_name: regular_notice_service
     build:
       context: admin
-      dockerfile: ./Dockerfile-celery
+      args:
+        - COMMAND=celery
     volumes:
       - regular_notice_service_data:/data
     restart: always
@@ -68,7 +72,8 @@ services:
     container_name: flower
     build:
       context: admin
-      dockerfile: ./Dockerfile-celery-flower
+      args:
+        - COMMAND=flower
     volumes:
       - flower_data:/data
     restart: always
@@ -107,11 +112,6 @@ services:
         condition: service_started
       notification-rabbit:
         condition: service_completed_successfully
-    environment:
-      NOTIFY_RABBIT_HOST: ${NOTIFY_RABBIT_HOST:-rabbit}
-      NOTIFY_RABBIT_PORT: ${NOTIFY_RABBIT_PORT:-5672}
-      NOTIFY_POSTGRES_HOST: ${NOTIFY_POSTGRES_HOST:-postgres}
-      NOTIFY_POSTGRES_PORT: ${NOTIFY_POSTGRES_PORT:-5432}
 
   notification-user:
     build:
@@ -127,11 +127,6 @@ services:
         condition: service_started
       notification-rabbit:
         condition: service_completed_successfully
-    environment:
-      NOTIFY_RABBIT_HOST: ${NOTIFY_RABBIT_HOST:-rabbit}
-      NOTIFY_RABBIT_PORT: ${NOTIFY_RABBIT_PORT:-5672}
-      NOTIFY_POSTGRES_HOST: ${NOTIFY_POSTGRES_HOST:-postgres}
-      NOTIFY_POSTGRES_PORT: ${NOTIFY_POSTGRES_PORT:-5432}
 
   notification-rabbit:
     build:
@@ -142,11 +137,6 @@ services:
       - .env
     depends_on:
       - rabbit
-    environment:
-      NOTIFY_RABBIT_HOST: ${NOTIFY_RABBIT_HOST:-rabbit}
-      NOTIFY_RABBIT_PORT: ${NOTIFY_RABBIT_PORT:-5672}
-      NOTIFY_POSTGRES_HOST: ${NOTIFY_POSTGRES_HOST:-postgres}
-      NOTIFY_POSTGRES_PORT: ${NOTIFY_POSTGRES_PORT:-5432}
 
   rabbit:
     build:

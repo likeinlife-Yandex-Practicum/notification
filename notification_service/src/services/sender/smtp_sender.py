@@ -1,9 +1,10 @@
 import structlog
 from container import Container
 from dependency_injector.wiring import Provide, inject
-from models import BaseNotificationDetails
+from models import SMTPNotificationDetails
 from models.queue_message import UserProvidedQueueMessage
-from notification_provider import TestProvider
+
+from ..notification_provider import SMTPProvider
 
 logger = structlog.get_logger()
 
@@ -11,12 +12,13 @@ logger = structlog.get_logger()
 @inject
 async def sender(
     message: UserProvidedQueueMessage,
-    provider: TestProvider = Provide[Container.test_provider],
+    provider: SMTPProvider = Provide[Container.smtp_provider],
 ) -> bool:
-    details = BaseNotificationDetails(
+    details = SMTPNotificationDetails(
         id=message.id,
         message=message.message,
         subject=message.subject,
+        from_=message.user.email,
         to=message.user.email,
     )
     result = await provider.send(details)

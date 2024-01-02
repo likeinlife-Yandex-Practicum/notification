@@ -35,7 +35,6 @@
 
 1. `make env` - сконфигурирует один файл из environment
 2. `make up` - запустить контейнеры
-3. `make dead-letter-setup` - настроить Dead Letter Queue
 
 ## Остановка
 

@@ -5,14 +5,26 @@ from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class PostgresSettings(BaseSettings):
+class UserDBSettings(BaseSettings):
     host: str
     port: str = Field("5432")
     user: str
     db_name: str
     password: str
 
-    model_config = SettingsConfigDict(env_prefix="notify_postgres_", env_file=".env")
+    model_config = SettingsConfigDict(env_prefix="notify_user_db_", env_file=".env")
+
+
+class NotifyDBSettings(BaseSettings):
+    host: str
+    port: str = Field("5432")
+    user: str
+    db_name: str
+    password: str
+
+    notify_status_table_name: str = Field("notification_status")
+
+    model_config = SettingsConfigDict(env_prefix="notify_notify_db_", env_file=".env")
 
 
 class RabbitSettings(BaseSettings):
@@ -43,14 +55,16 @@ class QueueNameSettings(BaseSettings):
 
 
 class Settings(BaseSettings):
-    postgres: ClassVar = PostgresSettings()
+    user_db: ClassVar = UserDBSettings()
+    notify_db: ClassVar = NotifyDBSettings()
     rabbit: ClassVar = RabbitSettings()
     smtp: ClassVar = SMTPSettings()
     queue: ClassVar = QueueNameSettings()
 
     rabbit_url: str = f"amqp://{rabbit.user}:{rabbit.password}@{rabbit.host}:{rabbit.port}/"
-    postgres_dsn: str = (
-        f"postgres://{postgres.user}:{postgres.password}@{postgres.host}:{postgres.port}/{postgres.db_name}"
+    user_db_dsn: str = f"postgres://{user_db.user}:{user_db.password}@{user_db.host}:{user_db.port}/{user_db.db_name}"
+    notify_db_dsn: str = (
+        f"postgres://{notify_db.user}:{notify_db.password}@{notify_db.host}:{notify_db.port}/{notify_db.db_name}"
     )
 
     console_logging_level: str = Field("DEBUG")

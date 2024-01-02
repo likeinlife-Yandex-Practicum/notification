@@ -1,17 +1,18 @@
 import structlog
 from core.logger_setup import configure_structlog
 from core.settings import Settings
-from db.postgres import get_connection_pool
+from db.postgres import get_user_db_connection_pool
 from db.rabbit import get_channel_pool
 from dependency_injector import containers, providers
-from notification_provider import SMTPProvider, TestProvider
+from services.notification_provider import SMTPProvider, TestProvider
+from services.task_status_service import TaskStatusService
 from services.user_provider import UserProvider
 
 
 class Container(containers.DeclarativeContainer):
     settings: providers.Singleton[Settings] = providers.Singleton(Settings)
 
-    postgres_connection_pool: providers.Factory = providers.Factory(get_connection_pool)
+    postgres_connection_pool: providers.Factory = providers.Factory(get_user_db_connection_pool)
     rabbit_channel_pool: providers.Singleton = providers.Singleton(get_channel_pool)
 
     logging: providers.Resource = providers.Resource(
@@ -38,4 +39,11 @@ class Container(containers.DeclarativeContainer):
         UserProvider,
         logger=structlog.get_logger("user_provider"),
         connection_pool=postgres_connection_pool,
+    )
+
+    task_status_service: providers.Singleton[TaskStatusService] = providers.Singleton(
+        TaskStatusService,
+        connection_pool=postgres_connection_pool,
+        table_name=settings().notify_db.notify_status_table_name,
+        logger=structlog.get_logger("task_status"),
     )

@@ -25,5 +25,10 @@ COPY . .
 
 EXPOSE 8000
 
-RUN chmod +x ./bash/entrypoint.sh
-ENTRYPOINT ["./bash/entrypoint.sh"]
+RUN chmod +x ./bash -R
+RUN chmod +x ./docker-entrypoint.sh
+
+ARG COMMAND
+ENV COMMAND_VAR=${COMMAND}
+
+ENTRYPOINT ./docker-entrypoint.sh $COMMAND_VAR

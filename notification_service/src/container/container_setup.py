@@ -1,7 +1,7 @@
 import services.consumer as consumer
 import services.producer as producer
 from resolver import type_resolver, user_resolver
-from sender import smtp_sender, test_sender
+from services.sender import smtp_sender, test_sender
 
 from .container import Container
 
