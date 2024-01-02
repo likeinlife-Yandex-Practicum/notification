@@ -1,5 +1,6 @@
 import asyncio
 import random
+import uuid
 from string import ascii_lowercase
 
 import aio_pika
@@ -17,6 +18,7 @@ def generate_message() -> QueueMessage:
     message = "".join(random.sample(ascii_lowercase, 5))
     subject = "Test subject " + "".join(random.sample(ascii_lowercase, 5))
     return QueueMessage(
+        id=uuid.uuid4(),
         to_id=[],
         to_role=["user"],
         type_=type_,
