@@ -20,7 +20,9 @@ services:
       - "8001:8001"
 
   admin_notifications:
-    build: admin
+    build:
+      context: admin
+      dockerfile: ./Dockerfile
     container_name: django-admin
     volumes:
       - static_volume:/opt/admin/static
@@ -34,6 +36,48 @@ services:
       - postgres
     expose:
       - "8000"
+
+  redis_notifications:
+    image: redis:7.0.5-alpine
+    container_name: redis_notifications
+    volumes:
+      - redis_notifications_data:/data
+    restart: always
+    ports:
+      - "6379:6379"
+
+  regular_notice_service:
+    container_name: regular_notice_service
+    build:
+      context: admin
+      dockerfile: ./Dockerfile-celery
+    volumes:
+      - regular_notice_service_data:/data
+    restart: always
+    env_file:
+      - .env
+    environment:
+      PG_ADMIN_NF_DB_HOST: ${PG_ADMIN_NF_DB_HOST:-postgres}
+      PG_ADMIN_NF_DB_PORT: ${PG_ADMIN_NF_DB_PORT:-5432}
+    depends_on:
+      - postgres
+      - admin_notifications
+      - redis_notifications
+
+  flower:
+    container_name: flower
+    build:
+      context: admin
+      dockerfile: ./Dockerfile-celery-flower
+    volumes:
+      - flower_data:/data
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - regular_notice_service
+    ports:
+      - "5555:5555"
 
   nginx:
     image: nginx:latest
@@ -137,3 +181,6 @@ volumes:
   db_volume:
   static_volume:
   media_volume:
+  redis_notifications_data:
+  regular_notice_service_data:
+  flower_data:

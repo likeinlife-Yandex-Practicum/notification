@@ -97,6 +97,18 @@ INTERNAL_IPS = [
     '127.0.0.1',
 ]
 
+NOTIFICATION_API_URL = os.environ.get('DJANGO_ADMIN_NF_NOTIFICATION_API_URL', 'http://127.0.0.1:8001')
+
+REDIS_HOST = os.environ.get('DJANGO_ADMIN_NF_REDIS_HOST', '127.0.0.1')
+REDIS_PORT = os.environ.get('DJANGO_ADMIN_NF_REDIS_PORT', 6379)
+CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/0'
+CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
+CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/0'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_IMPORTS = ('notifications.tasks',)
+
 if DEBUG:
     INSTALLED_APPS.append('debug_toolbar')
     MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
