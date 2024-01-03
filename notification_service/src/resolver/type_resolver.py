@@ -44,6 +44,7 @@ async def resolver(
                 description="Dead-letter max count reached",
                 status=NotifyStatusEnum.ER,
                 subject=adapted_message.subject,
+                type=str(adapted_message.type_.value).upper(),
             ),
         )
         logger.error(
@@ -62,6 +63,7 @@ async def resolver(
             description=f"Type {adapted_message.type_} not found",
             status=NotifyStatusEnum.ER,
             subject=adapted_message.subject,
+            type=str(adapted_message.type_.value).upper(),
         )
         await task_status.upsert(
             notify=notify,
@@ -78,6 +80,7 @@ async def resolver(
         description="OK",
         status=NotifyStatusEnum.OK,
         subject=adapted_message.subject,
+        type=str(adapted_message.type_.value).upper(),
     )
     await task_status.upsert(
         notify=notify,

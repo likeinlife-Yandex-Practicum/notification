@@ -1,0 +1,262 @@
+version: "3"
+
+services:
+  notify-api:
+    build:
+      context: ./notification-api
+    restart: on-failure
+    entrypoint: uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+    env_file:
+      - .env
+    depends_on:
+      rabbit:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+    volumes:
+      - "./notification-api/src:/opt/app/"
+    environment:
+      API_RABBIT_HOST: ${API_RABBIT_HOST:-rabbit}
+      API_RABBIT_PORT: ${API_RABBIT_PORT:-5672}
+      API_POSTGRES_HOST: ${API_POSTGRES_HOST:-postgres}
+      API_POSTGRES_PORT: ${API_POSTGRES_PORT:-5432}
+      API_PROJECT_ROOT_URL: /notify 
+    ports:
+      - "8001:8001"
+
+  admin_notifications:
+    build:
+      context: admin
+      args:
+        - COMMAND=admin
+    container_name: django-admin
+    volumes:
+      - static_volume:/opt/admin/static
+      - media_volume:/opt/admin/media
+    env_file:
+      - .env
+    environment:
+      PG_ADMIN_NF_DB_HOST: ${PG_ADMIN_NF_DB_HOST:-postgres}
+      PG_ADMIN_NF_DB_PORT: ${PG_ADMIN_NF_DB_PORT:-5432}
+    depends_on:
+      - postgres
+    expose:
+      - "8000"
+
+  redis_notifications:
+    image: redis:7.0.5-alpine
+    container_name: redis_notifications
+    volumes:
+      - redis_notifications_data:/data
+    restart: always
+    ports:
+      - "6379:6379"
+
+  regular_notice_service:
+    container_name: regular_notice_service
+    build:
+      context: admin
+      args:
+        - COMMAND=celery
+    volumes:
+      - regular_notice_service_data:/data
+    restart: always
+    env_file:
+      - .env
+    environment:
+      PG_ADMIN_NF_DB_HOST: ${PG_ADMIN_NF_DB_HOST:-postgres}
+      PG_ADMIN_NF_DB_PORT: ${PG_ADMIN_NF_DB_PORT:-5432}
+    depends_on:
+      - postgres
+      - admin_notifications
+      - redis_notifications
+
+  flower:
+    container_name: flower
+    build:
+      context: admin
+      args:
+        - COMMAND=flower
+    volumes:
+      - flower_data:/data
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - regular_notice_service
+    ports:
+      - "5555:5555"
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - static_volume:/opt/admin/static
+      - media_volume:/opt/admin/media
+    depends_on:
+      - admin_notifications
+      - notify-api
+      - auth-api
+    ports:
+      - "80:80"
+
+  notification-notify:
+    build:
+      context: "./notification_service"
+      args:
+        - COMMAND=notify
+    env_file:
+      - .env
+    depends_on:
+      rabbit:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+      notification-rabbit:
+        condition: service_completed_successfully
+
+  notification-user:
+    build:
+      context: "./notification_service"
+      args:
+        - COMMAND=user
+    env_file:
+      - .env
+    depends_on:
+      rabbit:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+      notification-rabbit:
+        condition: service_completed_successfully
+      auth-api:
+        condition: service_healthy
+
+  notification-rabbit:
+    build:
+      context: "./notification_service"
+      args:
+        - COMMAND=rabbit
+    env_file:
+      - .env
+    depends_on:
+      rabbit:
+        condition: service_healthy
+
+  rabbit:
+    build:
+      context: "./rabbitmq"
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  postgres:
+    image: postgres:alpine3.19
+    volumes:
+      - ./pg_dump/inserts.sql:/docker-entrypoint-initdb.d/dump.sql:ro
+      - db_volume:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+
+  auth-api:
+    build: 
+      context: auth_service/src
+      args:
+        - COMMAND=release
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - AUTH_JAEGER_HOST=jaeger
+      - AUTH_JAEGER_PORT=6831
+      - AUTH_POSTGRES_HOST=postgres
+      - AUTH_POSTGRES_PORT=5432
+      - AUTH_REDIS_HOST=redis_notifications
+      - AUTH_REDIS_PORT=6379
+      - AUTH_RSA_PRIVATE_PATH=/run/secrets/rsa_priv
+      - AUTH_RSA_PUBLIC_PATH=/run/secrets/rsa_pub
+      - AUTH_PROJECT_ROOT_URL=/auth
+      - AUTH_ACCOUNTS_FILE_PATH=/run/secrets/service_accounts
+    depends_on:
+      - postgres
+      - redis_notifications
+    healthcheck:
+      test: curl --fail http://127.0.0.1/health || exit 1
+      interval: 5s
+      timeout: 30s
+      retries: 5
+    volumes:
+      - ./auth_service/src:/opt/app
+    secrets:
+      - rsa_pub
+      - rsa_priv
+      - service_accounts
+    expose:
+      - 80
+
+  elasticsearch:
+    image: elasticsearch:7.17.14
+    healthcheck:
+      test: "curl -f 127.0.0.1:9200 || exit 1"
+      interval: 10s
+      timeout: 30s
+    environment:
+      - "discovery.type=single-node"
+      - "xpack.security.enabled=false"
+      - "ES_JAVA_OPTS=-Xms200m -Xmx200m"
+    volumes:
+      - elastic-data:/usr/share/elasticsearch/data
+    expose:
+      - 9200
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    restart: on-failure
+    environment:
+      SPAN_STORAGE_TYPE: elasticsearch
+      ES_SERVER_URLS: "http://${ELASTIC_SEARCH_HOST}:${ELASTIC_SEARCH_PORT}"
+    depends_on:
+      - elasticsearch
+      - auth-api
+    ports:
+      - "6831:6831/udp"
+      - "16686:16686"
+
+  mailpit:
+    container_name: mailpit
+    restart: on-failure
+    image: axllent/mailpit:latest
+    environment:
+      - MP_SMTP_AUTH_ALLOW_INSECURE=true
+      - MP_SMTP_AUTH_ACCEPT_ANY=true
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+volumes:
+  db_volume:
+  static_volume:
+  media_volume:
+  redis_notifications_data:
+  regular_notice_service_data:
+  flower_data:
+  elastic-data:
+
+secrets:
+  rsa_pub:
+    file: ./keys/rsa.pub
+  rsa_priv:
+    file: ./keys/rsa.private
+  service_accounts:
+    file: ./keys/services.json

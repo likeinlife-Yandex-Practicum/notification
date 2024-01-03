@@ -15,12 +15,11 @@ System(auth_service, "Auth service")
 System_Boundary(notification_system, "Notification") {
     Container(admin_panel, "Admin Panel")
     Container(notify_api, "Notify API")
-    Container(notify_regular_service, "Regular converter service")
+    Container(notify_regular_service, "Regular sheduler service")
     Container(notify_workers_pipeline, "Notify Workers Pipeline")
     ContainerDb(db, "Notify DB", "PostgreSQL", $sprite="postgresql")
 
     ContainerDb(queue, "Task queue", "RabbitMQ", $sprite="rabbitmq")
-    ContainerDb(user_db, "User database", "PostgreSQL", $sprite="postgresql")
 }
 
 Rel(auth_service, notify_api, "")
@@ -28,15 +27,15 @@ Rel(auth_service, notify_api, "")
 Rel(notify_admin, admin_panel, "")
 Rel(admin_panel, db, "")
 
-Rel_R(notify_api, db, "")
+Rel(notify_api, db, "")
 Rel(notify_api, queue, " ")
 
-Rel(notify_regular_service, db, " ")
-Rel(notify_regular_service, notify_api, "")
+Rel_L(notify_regular_service, db, " ")
+Rel(notify_regular_service, notify_api, " ")
 
-Rel(notify_workers_pipeline, user_db, " ")
-Rel_R(queue, notify_workers_pipeline, " ")
-Rel(notify_workers_pipeline, db, " ")
+Rel(queue, notify_workers_pipeline, " ")
+Rel(notify_workers_pipeline, db, "Change status")
+Rel(notify_workers_pipeline, auth_service, "Get user")
 
 Rel(notify_workers_pipeline, user, "Notify")
 

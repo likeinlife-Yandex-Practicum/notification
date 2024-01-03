@@ -12,6 +12,7 @@ database dead_letter_queue as "Dead\nLetter\nQueue"
 
 box "User providing" #LightCyan
     participant user_provider as "User\nProvider"
+    participant auth_service as "Auth Service" #LightBlue
     database user_provided_queue as "User\nProvided\nQueue"
 end box
 
@@ -29,6 +30,8 @@ deactivate api
 
 notify_task_queue -> user_provider
 activate notify_task_queue
+user_provider -> auth_service: Get user
+auth_service -> user_provider
 alt ok
     user_provider -> user_provided_queue
     user_provider -> notify_requests: User Provided

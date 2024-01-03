@@ -21,8 +21,8 @@ class TaskStatusService:
         con: Connection
         async with self.connection_pool.acquire() as con:
             query = (
-                f"INSERT INTO {self.table_name} (id, task_id, subject, status, description) "  # noqa: S608
-                "VALUES ($1, $2, $3, $4, $5) "
+                f"INSERT INTO {self.table_name} (id, task_id, subject, status, description, notification_type) "  # noqa: S608
+                "VALUES ($1, $2, $3, $4, $5, $7) "
                 "ON CONFLICT (id) "
                 "DO UPDATE SET status=$4, description=$5, updated_at=$6 "
                 "RETURNING id;"
@@ -35,6 +35,7 @@ class TaskStatusService:
                 notify.status,
                 notify.description,
                 datetime.datetime.now(),
+                notify.type,
             )
 
             if not result:

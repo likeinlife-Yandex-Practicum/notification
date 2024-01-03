@@ -10,6 +10,8 @@ def configure_structlog(json_logging_level: str, console_logging_level: str):
     logging.basicConfig()
     logging.getLogger("aio_pika").setLevel(logging.ERROR)
     logging.getLogger("aiormq").setLevel(logging.ERROR)
+    logging.getLogger("httpx").setLevel(logging.ERROR)
+    logging.getLogger("httpcore").setLevel(logging.ERROR)
     structlog.configure(
         processors=[
             structlog.stdlib.filter_by_level,

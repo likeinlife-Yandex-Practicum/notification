@@ -2,8 +2,8 @@ import uuid
 from contextlib import asynccontextmanager
 
 import structlog
-from api.v1 import task
 from api import healthcheck
+from api.v1 import task
 from core.settings import settings
 from db import postgres, rabbit
 from errors.base import BaseError
@@ -30,6 +30,7 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
     default_response_class=ORJSONResponse,
     lifespan=lifespan,
+    root_path=settings.project_root_url,
 )
 
 

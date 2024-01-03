@@ -12,15 +12,24 @@ class RegularNotificationAdmin(admin.ModelAdmin):
     list_display = ("subject", "start_at", "status", "roles", "template", "created_at", "updated_at")
     list_filter = ("created_at", "updated_at")
     search_fields = ("subject",)
-    readonly_fields = ("status", )
+    readonly_fields = ("status",)
 
 
 @admin.register(NotificationStatus)
 class NotificationStatusAdmin(admin.ModelAdmin):
-    list_display = ("id", "task_id", "subject", "status", "description", "created_at", "updated_at")
+    list_display = (
+        "id",
+        "task_id",
+        "subject",
+        "status",
+        "notification_type",
+        "description",
+        "created_at",
+        "updated_at",
+    )
     list_filter = ("created_at", "updated_at")
     search_fields = ("subject", "task_id", "id")
-    readonly_fields = ("status",)
+    readonly_fields = ("status", "notification_type", "subject")
 
 
 @admin.register(Template)

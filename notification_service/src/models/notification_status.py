@@ -10,9 +10,16 @@ class NotifyStatusEnum(str, Enum):
     ER = "ER"
 
 
+class NotifyTypeEnum(str, Enum):
+    EMAIL = "EMAIL"
+    WEBSOCKET = "WEBSOCKET"
+    TEST = "TEST"
+
+
 class NotifyStatus(BaseModel):
     id: uuid.UUID
     task_id: uuid.UUID
     subject: str
     status: NotifyStatusEnum
     description: str | None
+    type: NotifyTypeEnum

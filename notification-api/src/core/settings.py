@@ -39,6 +39,7 @@ class RabbitSettings(BaseSettings):
 
 
 class Settings(BaseSettings):
+    project_root_url: str = Field("")
     postgres: ClassVar = PostgresSettings()
     postgres_table: ClassVar = PostgresTable()
     rabbit: ClassVar = RabbitSettings()
@@ -49,6 +50,8 @@ class Settings(BaseSettings):
 
     console_logging_level: str = Field("DEBUG")
     json_logging_level: str = Field("ERROR")
+
+    model_config = SettingsConfigDict(env_prefix="api_", env_file=".env")
 
 
 settings = Settings()

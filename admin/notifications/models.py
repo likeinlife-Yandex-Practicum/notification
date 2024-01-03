@@ -1,5 +1,4 @@
 import uuid
-from datetime import timedelta
 
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
@@ -7,6 +6,7 @@ from django.db.models.functions import Now
 from django.utils.translation import gettext_lazy as _
 
 from notifications.enums.notification_registration_status import NotificationRegistrationStatus
+from notifications.enums.notification_status import NotificationStatusEnum, NotificationTypeEnum
 
 
 class TimeStampedMixin(models.Model):
@@ -72,12 +72,6 @@ class Notification(UUIDMixin, TimeStampedMixin):
         return self.subject
 
 
-class NotificationStatusEnum(models.TextChoices):
-    PENDING = "PG", _("Pending")
-    OK = "OK", _("Ok")
-    ERROR = "ER", _("Error")
-
-
 class NotificationStatus(UUIDMixin, TimeStampedMixin):
     task_id = models.UUIDField(_("task_id"), editable=False)
     subject = models.CharField(_("subject"), max_length=64)
@@ -88,6 +82,11 @@ class NotificationStatus(UUIDMixin, TimeStampedMixin):
         default=NotificationStatusEnum.PENDING,
     )
     description = models.TextField(_("description"), null=True)
+    notification_type = models.CharField(
+        _("notification_type"),
+        max_length=10,
+        choices=NotificationTypeEnum.choices,
+    )
 
     class Meta:
         db_table = 'public"."notification_status'

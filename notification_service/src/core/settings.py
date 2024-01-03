@@ -55,12 +55,26 @@ class QueueNameSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="notify_queue_", env_file=".env")
 
 
+class AuthSettings(BaseSettings):
+    password: str
+    email: str
+    host: str
+    port: str
+    sign_in_route: str
+
+    model_config = SettingsConfigDict(env_prefix="notify_auth_", env_file=".env")
+
+    def get_base_url(self) -> str:
+        return f"http://{self.host}:{self.port}/api/v1"
+
+
 class Settings(BaseSettings):
     user_db: ClassVar = UserDBSettings()
     notify_db: ClassVar = NotifyDBSettings()
     rabbit: ClassVar = RabbitSettings()
     smtp: ClassVar = SMTPSettings()
     queue: ClassVar = QueueNameSettings()
+    auth: ClassVar = AuthSettings()
 
     rabbit_url: str = f"amqp://{rabbit.user}:{rabbit.password}@{rabbit.host}:{rabbit.port}/"
     user_db_dsn: str = f"postgres://{user_db.user}:{user_db.password}@{user_db.host}:{user_db.port}/{user_db.db_name}"

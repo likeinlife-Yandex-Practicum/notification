@@ -1,4 +1,5 @@
 import structlog
+from container.service_token import get_service_token
 from core.logger_setup import configure_structlog
 from core.settings import Settings
 from db.postgres import get_user_db_connection_pool
@@ -21,6 +22,8 @@ class Container(containers.DeclarativeContainer):
         settings().console_logging_level,
     )
 
+    tokens: providers.Resource = providers.Resource(get_service_token)
+
     smtp_provider: providers.Singleton[SMTPProvider] = providers.Singleton(
         SMTPProvider,
         smtp_host=settings().smtp.host,
@@ -39,6 +42,7 @@ class Container(containers.DeclarativeContainer):
         UserProvider,
         logger=structlog.get_logger("user_provider"),
         connection_pool=postgres_connection_pool,
+        tokens=tokens,
     )
 
     task_status_service: providers.Singleton[TaskStatusService] = providers.Singleton(
