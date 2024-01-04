@@ -9,7 +9,7 @@ from notifications.models import Notification
 
 def prepare_event_model(notification: Notification) -> EventSchema:
     return EventSchema(
-        type_="email",
+        type_=notification.type.lower(),
         template=notification.template.slug,
         is_regular=True,
         subject=notification.subject,
@@ -22,8 +22,8 @@ def prepare_event_model(notification: Notification) -> EventSchema:
 def register_event(event: EventSchema) -> requests.Response:
     request_id = str(uuid.uuid4())
     response = requests.post(
-        f"{NOTIFICATION_API_URL}/api/v1/events",
-        data=event.json(),
+        f"{NOTIFICATION_API_URL}/api/v1/events/",
+        json=event.model_dump(),
         headers={"X-Request-Id": request_id},
         timeout=30,
     )

@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 @admin.register(Notification)
 class RegularNotificationAdmin(admin.ModelAdmin):
-    list_display = ("subject", "start_at", "status", "roles", "template", "created_at", "updated_at")
+    list_display = ("subject", "start_at", "status", "type", "roles", "template", "created_at", "updated_at")
     list_filter = ("created_at", "updated_at")
     search_fields = ("subject",)
     readonly_fields = ("status",)

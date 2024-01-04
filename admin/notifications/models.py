@@ -6,7 +6,8 @@ from django.db.models.functions import Now
 from django.utils.translation import gettext_lazy as _
 
 from notifications.enums.notification_registration_status import NotificationRegistrationStatus
-from notifications.enums.notification_status import NotificationStatusEnum, NotificationTypeEnum
+from notifications.enums.notification_status_enum import NotificationStatusEnum
+from notifications.enums.notification_type_enum import NotificationTypeEnum
 
 
 class TimeStampedMixin(models.Model):
@@ -61,6 +62,12 @@ class Notification(UUIDMixin, TimeStampedMixin):
         max_length=64,
         choices=NotificationRegistrationStatus.choices,
         default=NotificationRegistrationStatus.WAITING,
+    )
+    type = models.CharField(
+        _("type"),
+        max_length=64,
+        choices=NotificationTypeEnum.choices,
+        default=NotificationTypeEnum.EMAIL,
     )
 
     class Meta:

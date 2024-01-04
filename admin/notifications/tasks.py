@@ -2,7 +2,7 @@ import logging
 from http import HTTPStatus
 
 from django.utils import timezone
-from pydantic.errors import PydanticTypeError, PydanticValueError
+from pydantic import ValidationError
 from requests.exceptions import RequestException
 
 from notifications.celery import app
@@ -38,7 +38,7 @@ def send_notifications():
                     response.text,
                 )
             notification.save()
-        except (PydanticValueError, PydanticTypeError) as err:
+        except ValidationError as err:
             logger.error("Cant prepare model, notification_id=%s\nError: %s", notification.id, err)
         except RequestException as err:
             logger.error("Cant send request, notification_id=%s\nError: %s", notification.id, err)
