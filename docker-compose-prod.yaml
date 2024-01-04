@@ -5,7 +5,6 @@ services:
     build:
       context: ./notification-api
     restart: on-failure
-    entrypoint: uvicorn main:app --host 0.0.0.0 --port 8001 --reload
     env_file:
       - .env
     depends_on:
@@ -21,8 +20,8 @@ services:
       API_POSTGRES_HOST: ${API_POSTGRES_HOST:-postgres}
       API_POSTGRES_PORT: ${API_POSTGRES_PORT:-5432}
       API_PROJECT_ROOT_URL: /notify 
-    ports:
-      - "8001:8001"
+    expose:
+      - "8001"
 
   admin_notifications:
     build:
@@ -160,7 +159,6 @@ services:
   postgres:
     image: postgres:alpine3.19
     volumes:
-      - ./pg_dump/inserts.sql:/docker-entrypoint-initdb.d/dump.sql:ro
       - db_volume:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: postgres

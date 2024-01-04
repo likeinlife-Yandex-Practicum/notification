@@ -5,6 +5,7 @@
 Сервис реализован по принципу pipeline, прослойками между микро-сервисами которого служат очереди RabbitMQ. 
 
 Ссылка на репозиторий: `https://github.com/likeinlife/notifications_sprint_1`
+
 # Ссылка на репозиторий 
 
 Ссылка на репозиторий: `https://github.com/likeinlife/notifications_sprint_1`

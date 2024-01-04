@@ -10,6 +10,9 @@ downv:
 down:
 	docker compose down
 
+prod:
+	docker compose -f docker-compose-prod.yaml up -d --build
+
 test:
 	docker compose -f ./tests/docker-compose.yaml up --abort-on-container-exit --exit-code-from tests --attach tests --build
 
