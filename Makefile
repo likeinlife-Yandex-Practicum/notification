@@ -27,3 +27,6 @@ create-admin:
 
 init-service-accounts:
 	docker compose exec auth-api python -m cli service init-service-accounts
+
+create-user:
+	docker compose exec auth-api python -m cli user create $(n)

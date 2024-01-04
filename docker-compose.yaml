@@ -12,7 +12,7 @@ services:
       rabbit:
         condition: service_healthy
       postgres:
-        condition: service_started
+        condition: service_healthy
     volumes:
       - "./notification-api/src:/opt/app/"
     environment:
@@ -39,7 +39,8 @@ services:
       PG_ADMIN_NF_DB_HOST: ${PG_ADMIN_NF_DB_HOST:-postgres}
       PG_ADMIN_NF_DB_PORT: ${PG_ADMIN_NF_DB_PORT:-5432}
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     expose:
       - "8000"
 
@@ -67,9 +68,12 @@ services:
       PG_ADMIN_NF_DB_HOST: ${PG_ADMIN_NF_DB_HOST:-postgres}
       PG_ADMIN_NF_DB_PORT: ${PG_ADMIN_NF_DB_PORT:-5432}
     depends_on:
-      - postgres
-      - admin_notifications
-      - redis_notifications
+      postgres:
+        condition: service_healthy
+      admin_notifications:
+        condition: service_started
+      redis_notifications:
+        condition: service_started
 
   flower:
     container_name: flower
@@ -128,7 +132,7 @@ services:
       rabbit:
         condition: service_healthy
       postgres:
-        condition: service_started
+        condition: service_healthy
       notification-rabbit:
         condition: service_completed_successfully
       auth-api:
@@ -160,12 +164,17 @@ services:
   postgres:
     image: postgres:alpine3.19
     volumes:
-      - ./pg_dump/inserts.sql:/docker-entrypoint-initdb.d/dump.sql:ro
       - db_volume:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: postgres
       POSTGRES_DB: postgres
       POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "postgres"]
+      interval: 10s
+      timeout: 60s
+      retries: 5
+      start_period: 5s  
     ports:
       - "5432:5432"
 
@@ -190,8 +199,10 @@ services:
       - AUTH_ACCOUNTS_FILE_PATH=/run/secrets/service_accounts
       - AUTH_DEBUG=True
     depends_on:
-      - postgres
-      - redis_notifications
+      postgres:
+        condition: service_healthy
+      redis_notifications:
+        condition: service_started
     healthcheck:
       test: curl --fail http://127.0.0.1/health || exit 1
       interval: 5s

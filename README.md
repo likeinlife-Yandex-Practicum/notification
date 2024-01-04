@@ -35,6 +35,8 @@
 
 1. `make env` - сконфигурирует один файл из environment
 2. `make up` - запустить контейнеры
+3. `make create-admin password=... email=...` - создать аккаунт администратора
+4. `make create-user n=...` - создать тестовых пользователей, n-штук
 
 ## Остановка
 
@@ -47,6 +49,6 @@
 
 # URLs
 
-1. admin panel: http://127.0.0.1/admin
+1. admin panel: http://127.0.0.1/admin , login=zaitsev, password=123qwe
 2. openapi: http://127.0.0.1/api/openapi
 2. mail: http://127.0.0.1:8025
