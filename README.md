@@ -56,5 +56,6 @@
 # URLs
 
 1. admin panel: http://127.0.0.1/admin , login=zaitsev, password=123qwe
-2. openapi: http://127.0.0.1/api/openapi
+2. notify-api: http://127.0.0.1/notify/api/openapi
+2. openapi: http://127.0.0.1/auth/api/openapi
 2. mail: http://127.0.0.1:8025
