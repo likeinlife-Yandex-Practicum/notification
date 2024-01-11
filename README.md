@@ -59,3 +59,11 @@
 2. notify-api: http://127.0.0.1/notify/api/openapi
 2. openapi: http://127.0.0.1/auth/api/openapi
 2. mail: http://127.0.0.1:8025
+
+# Сервисы
+
+![services](./diagrams/out/to_be.png)
+
+# Пайплайн
+
+![pipeline](./diagrams/out/notify_pipeline.png)
