@@ -3,7 +3,7 @@ version: "3"
 services:
   notify-api:
     build:
-      context: ./notification-api
+      context: ./notification_api
     restart: on-failure
     env_file:
       - .env
@@ -12,14 +12,12 @@ services:
         condition: service_healthy
       postgres:
         condition: service_started
-    volumes:
-      - "./notification-api/src:/opt/app/"
     environment:
       API_RABBIT_HOST: ${API_RABBIT_HOST:-rabbit}
       API_RABBIT_PORT: ${API_RABBIT_PORT:-5672}
       API_POSTGRES_HOST: ${API_POSTGRES_HOST:-postgres}
       API_POSTGRES_PORT: ${API_POSTGRES_PORT:-5432}
-      API_PROJECT_ROOT_URL: /notify 
+      API_PROJECT_ROOT_URL: /notify
     expose:
       - "8001"
 
@@ -45,8 +43,6 @@ services:
   redis_notifications:
     image: redis:7.0.5-alpine
     container_name: redis_notifications
-    volumes:
-      - redis_notifications_data:/data
     restart: always
     ports:
       - "6379:6379"
@@ -168,7 +164,7 @@ services:
       - "5432:5432"
 
   auth-api:
-    build: 
+    build:
       context: auth_service/src
       args:
         - COMMAND=release
@@ -246,7 +242,6 @@ volumes:
   db_volume:
   static_volume:
   media_volume:
-  redis_notifications_data:
   regular_notice_service_data:
   flower_data:
   elastic-data:

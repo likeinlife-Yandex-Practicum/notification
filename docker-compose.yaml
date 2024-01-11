@@ -3,7 +3,7 @@ version: "3"
 services:
   notify-api:
     build:
-      context: ./notification-api
+      context: ./notification_api
     restart: on-failure
     entrypoint: uvicorn main:app --host 0.0.0.0 --port 8001 --reload
     env_file:
@@ -14,13 +14,13 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - "./notification-api/src:/opt/app/"
+      - "./notification_api/src:/opt/app/"
     environment:
       API_RABBIT_HOST: ${API_RABBIT_HOST:-rabbit}
       API_RABBIT_PORT: ${API_RABBIT_PORT:-5672}
       API_POSTGRES_HOST: ${API_POSTGRES_HOST:-postgres}
       API_POSTGRES_PORT: ${API_POSTGRES_PORT:-5432}
-      API_PROJECT_ROOT_URL: /notify 
+      API_PROJECT_ROOT_URL: /notify
     ports:
       - "8001:8001"
 
@@ -47,8 +47,6 @@ services:
   redis_notifications:
     image: redis:7.0.5-alpine
     container_name: redis_notifications
-    volumes:
-      - redis_notifications_data:/data
     restart: always
     ports:
       - "6379:6379"
@@ -174,12 +172,12 @@ services:
       interval: 10s
       timeout: 60s
       retries: 5
-      start_period: 5s  
+      start_period: 5s
     ports:
       - "5432:5432"
 
   auth-api:
-    build: 
+    build:
       context: auth_service/src
       args:
         - COMMAND=debug
@@ -232,7 +230,6 @@ volumes:
   db_volume:
   static_volume:
   media_volume:
-  redis_notifications_data:
   regular_notice_service_data:
   flower_data:
 

@@ -1,7 +1,6 @@
-version: '3'
+version: "3"
 
 services:
-
   tests:
     build:
       context: .
@@ -14,7 +13,7 @@ services:
         condition: service_started
       api:
         condition: service_healthy
-    command: '-s'
+    command: "-s"
     environment:
       API_POSTGRES_HOST: ${API_POSTGRES_HOST:-postgres}
       API_POSTGRES_PORT: ${API_POSTGRES_PORT:-5432}
@@ -23,7 +22,7 @@ services:
 
   api:
     build:
-      context: ../notification-api
+      context: ../notification_api
     restart: on-failure
     entrypoint: uvicorn main:app --host 0.0.0.0 --port 8001
     env_file:
@@ -43,7 +42,7 @@ services:
       - "8001:8001"
 
   admin_notifications:
-    build: 
+    build:
       context: ../admin
       args:
         - COMMAND=admin
@@ -63,7 +62,7 @@ services:
       context: "../notification_service"
       args:
         - COMMAND=notify
-    env_file: 
+    env_file:
       - ./test.env
     depends_on:
       rabbit:
@@ -78,7 +77,7 @@ services:
       context: "../notification_service"
       args:
         - COMMAND=user
-    env_file: 
+    env_file:
       - ./test.env
     depends_on:
       rabbit:
@@ -93,7 +92,7 @@ services:
       context: "../notification_service"
       args:
         - COMMAND=rabbit
-    env_file: 
+    env_file:
       - ./test.env
     depends_on:
       - rabbit
@@ -124,5 +123,5 @@ services:
       - MP_SMTP_AUTH_ALLOW_INSECURE=true
       - MP_SMTP_AUTH_ACCEPT_ANY=true
     ports:
-      - '8025:8025'
-      - '1025:1025'
+      - "8025:8025"
+      - "1025:1025"
