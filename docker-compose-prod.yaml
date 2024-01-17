@@ -19,7 +19,7 @@ services:
       API_POSTGRES_PORT: ${API_POSTGRES_PORT:-5432}
       API_PROJECT_ROOT_URL: /notify
     expose:
-      - "8001"
+      - 8001
 
   admin_notifications:
     build:
@@ -38,14 +38,14 @@ services:
     depends_on:
       - postgres
     expose:
-      - "8000"
+      - 8000
 
   redis_notifications:
     image: redis:7.0.5-alpine
     container_name: redis_notifications
     restart: always
-    ports:
-      - "6379:6379"
+    expose:
+      - 6379
 
   regular_notice_service:
     container_name: regular_notice_service
@@ -80,7 +80,7 @@ services:
     depends_on:
       - regular_notice_service
     ports:
-      - "5555:5555"
+      - 5555:5555
 
   nginx:
     image: nginx:latest
@@ -95,7 +95,7 @@ services:
       - notify-api
       - auth-api
     ports:
-      - "80:80"
+      - 80:80
 
   notification-notify:
     build:
@@ -160,8 +160,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: postgres
       POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
+    expose:
+      - 5432
 
   auth-api:
     build:
@@ -224,8 +224,8 @@ services:
       - elasticsearch
       - auth-api
     ports:
-      - "6831:6831/udp"
-      - "16686:16686"
+      - 6831:6831/udp
+      - 16686:16686
 
   mailpit:
     container_name: mailpit
@@ -235,8 +235,8 @@ services:
       - MP_SMTP_AUTH_ALLOW_INSECURE=true
       - MP_SMTP_AUTH_ACCEPT_ANY=true
     ports:
-      - "8025:8025"
-      - "1025:1025"
+      - 8025:8025
+      - 1025:1025
 
 volumes:
   db_volume:
